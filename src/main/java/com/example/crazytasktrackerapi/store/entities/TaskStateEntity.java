@@ -7,6 +7,7 @@ import javax.persistence.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 @Getter
@@ -22,17 +23,32 @@ public class TaskStateEntity {
     @Column(name="id")
     private Long id;
 
-    @Column(unique = true)
     private String name;
 
     @Builder.Default
     private Instant createdAt = Instant.now();
 
-    private Long ordinal;
+    @OneToOne
+    TaskStateEntity leftTaskState;
+
+    @OneToOne
+    TaskStateEntity rightTaskState;
+
+    @ManyToOne
+    ProjectEntity project;
 
     @OneToMany
     @Builder.Default
     @JoinColumn(name="task_state_id", referencedColumnName = "id")
     private List<TaskEntity> tasks = new ArrayList<>();
+
+
+    public Optional<TaskStateEntity> getLeftTaskState(){
+        return Optional.ofNullable(leftTaskState);
+    }
+
+    public Optional<TaskStateEntity> getRightTaskState(){
+        return Optional.ofNullable(rightTaskState);
+    }
 
 }

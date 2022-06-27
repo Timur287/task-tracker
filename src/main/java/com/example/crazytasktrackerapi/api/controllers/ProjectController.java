@@ -1,5 +1,6 @@
 package com.example.crazytasktrackerapi.api.controllers;
 
+import com.example.crazytasktrackerapi.api.controllers.helpers.ControllerHelper;
 import com.example.crazytasktrackerapi.api.dto.AskDto;
 import com.example.crazytasktrackerapi.api.dto.ProjectDto;
 import com.example.crazytasktrackerapi.api.factories.ProjectDtoFactory;
@@ -31,11 +32,13 @@ public class ProjectController {
 
     ProjectDtoFactory projectDtoFactory;
 
-    public static final String CREATE_PROJECT = "/api/projects";
-    public static final String EDIT_PROJECT = "/api/projects/{project_id}";
-    public static final String DELETE_PROJECT = "/api/projects/{project_id}";
-    public static final String FETCH_PROJECTS = "/api/projects";
-    public static final String CREATE_OR_UPDATE_PROJECT = "/api/projects";
+    ControllerHelper controllerHelper;
+
+    public static final String CREATE_PROJECT = "/projects";
+    public static final String EDIT_PROJECT = "/projects/{project_id}";
+    public static final String DELETE_PROJECT = "/projects/{project_id}";
+    public static final String FETCH_PROJECTS = "/projects";
+    public static final String CREATE_OR_UPDATE_PROJECT = "/projects";
 
 
 
@@ -49,7 +52,7 @@ public class ProjectController {
 
         Stream<ProjectEntity> projectEntityStream = optionalPrefixName
                 .map(projectRepository::streamAllByNameStartsWithIgnoreCase)
-                .orElseGet(projectRepository::streamAll);
+                .orElseGet(projectRepository::streamAllBy);
 
         return projectEntityStream.map(projectDtoFactory::makeProjectDto)
                 .collect(Collectors.toList());
@@ -57,7 +60,7 @@ public class ProjectController {
 
 
     @PostMapping(CREATE_PROJECT)
-    public ProjectDto createProject(@RequestParam("projectName") String projectName){
+    public ProjectDto createProject(@RequestParam("project_name") String projectName){
 
         if(projectName.trim().isEmpty()){
             throw new BadRequestException("Name can't be empty.");
@@ -87,7 +90,7 @@ public class ProjectController {
             throw new BadRequestException("Name can't be empty.");
         }
 
-        ProjectEntity projectEntity = getProjectOrThrowException(projectId);
+        ProjectEntity projectEntity = controllerHelper.getProjectOrThrowException(projectId);
 
         projectRepository
                 .findByName(projectName)
@@ -121,7 +124,7 @@ public class ProjectController {
         }
 
         final ProjectEntity projectEntity = optionalProjectId
-                .map(this::getProjectOrThrowException)
+                .map(controllerHelper::getProjectOrThrowException)
                 .orElseGet(()->ProjectEntity.builder().build());
 
         optionalProjectName.flatMap(projectName ->
@@ -144,18 +147,11 @@ public class ProjectController {
     @DeleteMapping(DELETE_PROJECT)
     public AskDto deleteProject(@PathVariable("project_id") Long projectId){
 
-        getProjectOrThrowException(projectId);
+        controllerHelper.getProjectOrThrowException(projectId);
 
         projectRepository.deleteById(projectId);
         return AskDto.makeDefault(
                 !projectRepository.findById(projectId).isPresent()
         );
     }
-
-    private ProjectEntity getProjectOrThrowException(Long projectId) {
-        return projectRepository.findById(projectId)
-                .orElseThrow(()->new NotFoundException("Project not found"));
-    }
-
-
 }

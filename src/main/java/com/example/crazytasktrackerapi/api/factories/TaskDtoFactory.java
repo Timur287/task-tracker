@@ -2,7 +2,9 @@ package com.example.crazytasktrackerapi.api.factories;
 
 import com.example.crazytasktrackerapi.api.dto.TaskDto;
 import com.example.crazytasktrackerapi.store.entities.TaskEntity;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TaskDtoFactory {
 
     public TaskDto makeTaskDto(TaskEntity taskEntity){

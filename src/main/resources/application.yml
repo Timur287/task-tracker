@@ -4,7 +4,9 @@ spring:
   datasource:
       url: jdbc:mysql://localhost:3306/crazy-task-tracker
       username: root
-      password: 123456
+      password: root
   jpa:
     hibernate:
       ddl-auto: update
+    show-sql: true
+
