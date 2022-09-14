@@ -2,6 +2,7 @@ package com.example.crazytasktrackerapi.store.entities;
 
 
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -16,17 +17,18 @@ import java.util.Optional;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name="task_state")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class TaskStateEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
-    private Long id;
+    Long id;
 
-    private String name;
+    String name;
 
     @Builder.Default
-    private Instant createdAt = Instant.now();
+    Instant createdAt = Instant.now();
 
     @OneToOne
     TaskStateEntity leftTaskState;
@@ -37,10 +39,9 @@ public class TaskStateEntity {
     @ManyToOne
     ProjectEntity project;
 
-    @OneToMany
+    @OneToMany(mappedBy = "taskStateEntity", cascade = CascadeType.ALL)
     @Builder.Default
-    @JoinColumn(name="task_state_id", referencedColumnName = "id")
-    private List<TaskEntity> tasks = new ArrayList<>();
+    List<TaskEntity> tasks = new ArrayList<>();
 
 
     public Optional<TaskStateEntity> getLeftTaskState(){

@@ -23,6 +23,5 @@ public class TaskDto {
     @JsonProperty("created_ate")
     Instant createdAt;
 
-    @NonNull
     String description;
 }

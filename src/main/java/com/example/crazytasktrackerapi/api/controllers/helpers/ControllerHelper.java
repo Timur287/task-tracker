@@ -13,11 +13,11 @@ import javax.transaction.Transactional;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Component
-@Transactional
 public class ControllerHelper {
 
     ProjectRepository projectRepository;
 
+    @Transactional
      public ProjectEntity getProjectOrThrowException(Long projectId) {
         return projectRepository.findById(projectId)
                 .orElseThrow(()->new NotFoundException("Project not found"));

@@ -1,11 +1,10 @@
 package com.example.crazytasktrackerapi.store.entities;
 
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Getter
@@ -14,17 +13,22 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name="task")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class TaskEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
     @Column(unique = true)
-    private String name;
+    String name;
 
     @Builder.Default
-    private Instant createdAt = Instant.now();
+    Instant createdAt = Instant.now();
 
-    private String description;
+    String description;
+
+    @ManyToOne
+    @JoinColumn
+    TaskStateEntity taskStateEntity;
 }

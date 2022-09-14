@@ -1,7 +1,6 @@
 package com.example.crazytasktrackerapi.api.controllers;
 
 import com.example.crazytasktrackerapi.api.controllers.helpers.ControllerHelper;
-import com.example.crazytasktrackerapi.api.dto.TaskDto;
 import com.example.crazytasktrackerapi.api.dto.TaskStateDto;
 import com.example.crazytasktrackerapi.api.factories.TaskStateDtoFactory;
 import com.example.crazytasktrackerapi.exceptions.BadRequestException;
@@ -9,7 +8,6 @@ import com.example.crazytasktrackerapi.exceptions.NotFoundException;
 import com.example.crazytasktrackerapi.store.entities.ProjectEntity;
 import com.example.crazytasktrackerapi.store.entities.TaskStateEntity;
 import com.example.crazytasktrackerapi.store.repositories.TaskStateRepository;
-import javafx.concurrent.Task;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -50,7 +47,7 @@ public class TaskStateController {
         return projectEntity
                 .getTaskStates()
                 .stream()
-                .map(taskStateDtoFactory::makeTaskStateDto)
+                .map(TaskStateDtoFactory::makeTaskStateDto)
                 .collect(Collectors.toList());
     }
 
@@ -77,7 +74,7 @@ public class TaskStateController {
             }
             // находим крайний справа элемент
             if(!taskState.getRightTaskState().isPresent()){
-                optionalAnotherTaskState = Optional.of(taskState);
+                optionalAnotherTaskState = Optional.of(taskState); // как может не быть крайнего справа taskState? Только если их вообще нет
                 break;
             }
         }
@@ -101,7 +98,7 @@ public class TaskStateController {
        // обновляем наш сохраненный taskState
        TaskStateEntity savedTaskStateEntity = taskStateRepository.saveAndFlush(taskState);
 
-       return taskStateDtoFactory.makeTaskStateDto(savedTaskStateEntity);
+       return TaskStateDtoFactory.makeTaskStateDto(savedTaskStateEntity);
 
     }
 
@@ -115,10 +112,9 @@ public class TaskStateController {
 
         TaskStateEntity taskStateEntity = getTaskStateOrThrowException(taskStateId);
 
-        taskStateRepository
-                .findTaskStateEntityByProjectIdAndNameContainsIgnoreCase(
-                        taskStateEntity.getProject().getId(),
-                        taskStateName
+        // проверяем существует ли уже в этом проекте taskState с заданным именем
+        taskStateRepository.findTaskStateEntityByProjectIdAndNameContainsIgnoreCase(
+                taskStateEntity.getProject().getId(), taskStateName
                 ).filter(anotherTaskState -> !anotherTaskState.getId().equals(taskStateId))
                 .ifPresent(anotherTaskState -> {
                     throw new BadRequestException(
@@ -127,37 +123,41 @@ public class TaskStateController {
 
         taskStateEntity.setName(taskStateName);
 
-        return taskStateDtoFactory.makeTaskStateDto(taskStateRepository.saveAndFlush(taskStateEntity));
+        return TaskStateDtoFactory.makeTaskStateDto(taskStateRepository.saveAndFlush(taskStateEntity));
     }
     @PatchMapping(CHANGE_TASK_POSITION)
     public TaskStateDto changeTaskPosition(
             @PathVariable("task_state_id") Long taskStateId,
             @RequestParam(name = "left_task_state_id", required = false) Optional<Long> optionalLeftTaskStateId){
 
+
+        // получаем id taskState, позицию которого хотим поменять
         TaskStateEntity changeTaskState = getTaskStateOrThrowException(taskStateId);
 
         ProjectEntity project = changeTaskState.getProject();
-
+        // если в проекте всего один taskState то выводим его
         if(project.getTaskStates().size()==1){
-            return taskStateDtoFactory.makeTaskStateDto(changeTaskState);
+            return TaskStateDtoFactory.makeTaskStateDto(changeTaskState);
         }
-
+        //находим id левого taskState(до изменения позиции)
         Optional<Long> oldLeftTaskStateId = changeTaskState
                 .getLeftTaskState()
                 .map(TaskStateEntity::getId);
-
+        //если id taskState слева который был изначально равен taskState id в параметре, то выводим taskState в изначальном виде
         if(oldLeftTaskStateId.equals(optionalLeftTaskStateId)){
-            return taskStateDtoFactory.makeTaskStateDto(changeTaskState);
+            return TaskStateDtoFactory.makeTaskStateDto(changeTaskState);
         }
-
+        //ищем taskState который будет слева по указанному id
         Optional<TaskStateEntity> optionalNewLeftTaskStateEntity = optionalLeftTaskStateId.map(leftTaskStateId -> {
 
+            // если leftTaskState == taskStateId то выбрасываем исключение
             if(leftTaskStateId.equals(taskStateId)){
                 throw new BadRequestException("Left task state is can't be equal task state id");
             }
 
-            TaskStateEntity leftTaskStateEntity = getTaskStateOrThrowException(leftTaskStateId);
 
+            TaskStateEntity leftTaskStateEntity = getTaskStateOrThrowException(leftTaskStateId);
+            // проверка находятся ли taskState-ы d одном проекте
             if(!leftTaskStateEntity.getProject().equals(project)){
                 throw new BadRequestException("Task states aren't in the same project");
             }
@@ -220,7 +220,7 @@ public class TaskStateController {
         optionalNewLeftTaskStateEntity.ifPresent(taskStateRepository::saveAndFlush);
         optionalNewRightTaskStateEntity.ifPresent(taskStateRepository::saveAndFlush);
 
-        return taskStateDtoFactory.makeTaskStateDto(changeTaskState);
+        return TaskStateDtoFactory.makeTaskStateDto(changeTaskState);
     }
 
     private TaskStateEntity getTaskStateOrThrowException(Long taskStateId){

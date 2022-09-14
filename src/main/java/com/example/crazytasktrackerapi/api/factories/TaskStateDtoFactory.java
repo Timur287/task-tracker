@@ -15,9 +15,7 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class TaskStateDtoFactory {
 
-    private final TaskDtoFactory taskDtoFactory;
-
-    public TaskStateDto makeTaskStateDto(TaskStateEntity taskStateEntity){
+    public static TaskStateDto makeTaskStateDto(TaskStateEntity taskStateEntity){
         return TaskStateDto.builder()
                 .id(taskStateEntity.getId())
                 .name(taskStateEntity.getName())
@@ -27,7 +25,7 @@ public class TaskStateDtoFactory {
                 .tasks(taskStateEntity
                         .getTasks()
                         .stream()
-                        .map(taskDtoFactory::makeTaskDto)
+                        .map(TaskDtoFactory::makeTaskDto)
                         .collect(Collectors.toList()))
                 .build();
     }

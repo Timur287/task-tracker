@@ -13,6 +13,6 @@ public class ErrorDTO {
 
     String errorMessage;
 
-    @JsonProperty("error_description")
-    String errorDescription;
+//    @JsonProperty("error_description")
+//    String errorDescription;
 }

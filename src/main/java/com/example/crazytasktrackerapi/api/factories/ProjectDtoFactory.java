@@ -4,11 +4,11 @@ import com.example.crazytasktrackerapi.api.dto.ProjectDto;
 import com.example.crazytasktrackerapi.store.entities.ProjectEntity;
 import org.springframework.stereotype.Component;
 
-//*псевдофабрика*
+//псевдофабрика
 @Component
 public class ProjectDtoFactory {
 
-    public ProjectDto makeProjectDto(ProjectEntity projectEntity){
+    public static ProjectDto makeProjectDto(ProjectEntity projectEntity){
         return ProjectDto.builder()
                 .id(projectEntity.getId())
                 .name(projectEntity.getName())

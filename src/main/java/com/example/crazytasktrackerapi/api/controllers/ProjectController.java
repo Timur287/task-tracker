@@ -29,9 +29,6 @@ import java.util.stream.Stream;
 public class ProjectController {
 
     ProjectRepository projectRepository;
-
-    ProjectDtoFactory projectDtoFactory;
-
     ControllerHelper controllerHelper;
 
     public static final String CREATE_PROJECT = "/projects";
@@ -44,8 +41,7 @@ public class ProjectController {
 
     @GetMapping(FETCH_PROJECTS)
     public List<ProjectDto> fetchProjects(
-            @RequestParam(value = "prefix_name", required = false)
-                    Optional<String> optionalPrefixName
+            @RequestParam(value = "prefix_name", required = false) Optional<String> optionalPrefixName
     ){
         optionalPrefixName = optionalPrefixName
                 .filter(prefixName -> !prefixName.trim().isEmpty());
@@ -54,7 +50,7 @@ public class ProjectController {
                 .map(projectRepository::streamAllByNameStartsWithIgnoreCase)
                 .orElseGet(projectRepository::streamAllBy);
 
-        return projectEntityStream.map(projectDtoFactory::makeProjectDto)
+        return projectEntityStream.map(ProjectDtoFactory::makeProjectDto)
                 .collect(Collectors.toList());
     }
 
@@ -78,7 +74,7 @@ public class ProjectController {
                         .build()
         );
 
-        return projectDtoFactory.makeProjectDto(projectEntity);
+        return ProjectDtoFactory.makeProjectDto(projectEntity);
     }
 
     @PatchMapping(EDIT_PROJECT)
@@ -91,19 +87,19 @@ public class ProjectController {
         }
 
         ProjectEntity projectEntity = controllerHelper.getProjectOrThrowException(projectId);
-
+        // проверка на существование имени
         projectRepository
                 .findByName(projectName)
                 .filter(anotherProject -> !Objects.equals(anotherProject.getId(),projectId))
                 .ifPresent(anotherProject -> {
-                    throw new BadRequestException("Project is already exists");
+                    throw new BadRequestException("Project with that name is already exists");
                 });
 
         projectEntity.setName(projectName);
 
         projectEntity = projectRepository.saveAndFlush(projectEntity);
 
-        return projectDtoFactory.makeProjectDto(projectEntity);
+        return ProjectDtoFactory.makeProjectDto(projectEntity);
     }
 
     @PutMapping(CREATE_OR_UPDATE_PROJECT)
@@ -124,9 +120,10 @@ public class ProjectController {
         }
 
         final ProjectEntity projectEntity = optionalProjectId
-                .map(controllerHelper::getProjectOrThrowException)
+                .map(controllerHelper::getProjectOrThrowException)      //WTF??? Не подходит т.к. выбрасывает исключение если отсутствует проект
                 .orElseGet(()->ProjectEntity.builder().build());
 
+        // проверка существует ли уже проект с таким именем
         optionalProjectName.flatMap(projectName ->
             projectRepository
                     .findByName(projectName)
@@ -141,7 +138,7 @@ public class ProjectController {
 
         final ProjectEntity savedProject = projectRepository.saveAndFlush(projectEntity);
 
-        return projectDtoFactory.makeProjectDto(savedProject);
+        return ProjectDtoFactory.makeProjectDto(savedProject);
     }
 
     @DeleteMapping(DELETE_PROJECT)
