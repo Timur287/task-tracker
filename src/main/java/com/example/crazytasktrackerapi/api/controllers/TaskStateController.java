@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 
 
 @RestController
-@Transactional
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @RequestMapping("/api")
