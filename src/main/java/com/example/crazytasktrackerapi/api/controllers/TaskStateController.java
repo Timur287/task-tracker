@@ -64,7 +64,7 @@ public class TaskStateController {
 
         Optional<TaskStateEntity> optionalAnotherTaskState = Optional.empty();
 
-        //проверяем нет ли taskState с указанным именем в проекте и находим последний справа taskState.
+        //check if there is no taskstate with the specified name in the project and find the last taskstate on the right.
         for(TaskStateEntity taskState: projectEntity.getTaskStates()){
             //проверка имени
             if(taskState.getName().equalsIgnoreCase(taskStateName)){
@@ -72,14 +72,14 @@ public class TaskStateController {
                         String.format("Task with state \"%s\" already exists", taskStateName)
                 );
             }
-            // находим крайний справа элемент
+            // the element on the far right
             if(!taskState.getRightTaskState().isPresent()){
-                optionalAnotherTaskState = Optional.of(taskState); // как может не быть крайнего справа taskState? Только если их вообще нет
+                optionalAnotherTaskState = Optional.of(taskState); 
                 break;
             }
         }
 
-        //теперь создаем taskStateEntity и сохраняем его в базу
+        //now we create a taskstateEntity and save it to the database
         TaskStateEntity taskState = taskStateRepository.saveAndFlush(
                TaskStateEntity.builder()
                        .name(taskStateName)
@@ -87,7 +87,7 @@ public class TaskStateController {
                        .build()
        );
 
-       //теперь настраиваем связи, чтобы можно было перемещать taskState-ы
+       //setting up connections so that we can move the taskstates
        optionalAnotherTaskState
                .ifPresent(anotherTaskState-> {
                    taskState.setLeftTaskState(anotherTaskState);
@@ -95,7 +95,7 @@ public class TaskStateController {
                    taskStateRepository.saveAndFlush(anotherTaskState);
                });
 
-       // обновляем наш сохраненный taskState
+       // updating saved taskstate
        TaskStateEntity savedTaskStateEntity = taskStateRepository.saveAndFlush(taskState);
 
        return TaskStateDtoFactory.makeTaskStateDto(savedTaskStateEntity);
@@ -112,7 +112,7 @@ public class TaskStateController {
 
         TaskStateEntity taskStateEntity = getTaskStateOrThrowException(taskStateId);
 
-        // проверяем существует ли уже в этом проекте taskState с заданным именем
+        // check if there is already a taskstate with the specified name in this project
         taskStateRepository.findTaskStateEntityByProjectIdAndNameContainsIgnoreCase(
                 taskStateEntity.getProject().getId(), taskStateName
                 ).filter(anotherTaskState -> !anotherTaskState.getId().equals(taskStateId))
@@ -131,33 +131,33 @@ public class TaskStateController {
             @RequestParam(name = "left_task_state_id", required = false) Optional<Long> optionalLeftTaskStateId){
 
 
-        // получаем id taskState, позицию которого хотим поменять
+        //get the id of the taskstate
         TaskStateEntity changeTaskState = getTaskStateOrThrowException(taskStateId);
 
         ProjectEntity project = changeTaskState.getProject();
-        // если в проекте всего один taskState то выводим его
+        // if there is only one taskstate in the project
         if(project.getTaskStates().size()==1){
             return TaskStateDtoFactory.makeTaskStateDto(changeTaskState);
         }
-        //находим id левого taskState(до изменения позиции)
+        //id of the left taskstate before the position change
         Optional<Long> oldLeftTaskStateId = changeTaskState
                 .getLeftTaskState()
                 .map(TaskStateEntity::getId);
-        //если id taskState слева который был изначально равен taskState id в параметре, то выводим taskState в изначальном виде
+        //if the id of the taskstate on the left, which was equal to taskstateid in the parameter, then we output original taskstate
         if(oldLeftTaskStateId.equals(optionalLeftTaskStateId)){
             return TaskStateDtoFactory.makeTaskStateDto(changeTaskState);
         }
-        //ищем taskState который будет слева по указанному id
+        //find taskstate that will be on the left by the specified id
         Optional<TaskStateEntity> optionalNewLeftTaskStateEntity = optionalLeftTaskStateId.map(leftTaskStateId -> {
 
-            // если leftTaskState == taskStateId то выбрасываем исключение
+            // if leftTaskState == taskstateId throw exception
             if(leftTaskStateId.equals(taskStateId)){
                 throw new BadRequestException("Left task state is can't be equal task state id");
             }
 
 
             TaskStateEntity leftTaskStateEntity = getTaskStateOrThrowException(leftTaskStateId);
-            // проверка находятся ли taskState-ы d одном проекте
+            // checking whether the taskstates is in the same project
             if(!leftTaskStateEntity.getProject().equals(project)){
                 throw new BadRequestException("Task states aren't in the same project");
             }
