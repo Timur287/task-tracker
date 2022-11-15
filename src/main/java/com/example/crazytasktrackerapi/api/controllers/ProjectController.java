@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Transactional
 @RestController
 @RequestMapping("/api")
 public class ProjectController {
