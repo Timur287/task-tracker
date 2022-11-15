@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @RequestMapping("/api")
-@Transactional
 public class TaskController {
 
     public static final String CREATE_TASK = "/tasks";
