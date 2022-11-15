@@ -66,7 +66,7 @@ public class TaskStateController {
 
         //check if there is no taskstate with the specified name in the project and find the last taskstate on the right.
         for(TaskStateEntity taskState: projectEntity.getTaskStates()){
-            //проверка имени
+           
             if(taskState.getName().equalsIgnoreCase(taskStateName)){
                 throw new BadRequestException(
                         String.format("Task with state \"%s\" already exists", taskStateName)
