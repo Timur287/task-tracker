@@ -87,7 +87,7 @@ public class ProjectController {
         }
 
         ProjectEntity projectEntity = controllerHelper.getProjectOrThrowException(projectId);
-        // проверка на существование имени
+        
         projectRepository
                 .findByName(projectName)
                 .filter(anotherProject -> !Objects.equals(anotherProject.getId(),projectId))
@@ -123,7 +123,6 @@ public class ProjectController {
                 .map(controllerHelper::getProjectOrThrowException)
                 .orElseGet(()->ProjectEntity.builder().build());
 
-        // проверка существует ли уже проект с таким именем
         optionalProjectName.flatMap(projectName ->
             projectRepository
                     .findByName(projectName)
