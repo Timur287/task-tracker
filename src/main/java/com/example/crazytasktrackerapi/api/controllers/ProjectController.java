@@ -120,7 +120,7 @@ public class ProjectController {
         }
 
         final ProjectEntity projectEntity = optionalProjectId
-                .map(controllerHelper::getProjectOrThrowException)      //WTF??? Не подходит т.к. выбрасывает исключение если отсутствует проект
+                .map(controllerHelper::getProjectOrThrowException)
                 .orElseGet(()->ProjectEntity.builder().build());
 
         // проверка существует ли уже проект с таким именем
