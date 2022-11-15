@@ -13,6 +13,5 @@ public interface ProjectRepository extends JpaRepository<ProjectEntity, Long> {
 
     Stream<ProjectEntity> streamAllBy();
 
-    // @Query("select p from ProjectEntity p where p.name like ?1%")
     Stream<ProjectEntity> streamAllByNameStartsWithIgnoreCase(String prefixName);
 }
