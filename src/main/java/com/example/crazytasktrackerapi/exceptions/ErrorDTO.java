@@ -10,9 +10,5 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ErrorDTO {
-
     String errorMessage;
-
-//    @JsonProperty("error_description")
-//    String errorDescription;
 }
